@@ -1,0 +1,794 @@
+PORTFOLIO_EX torgi;
+DESCRIPTION torgi;
+CLIENTS_LIST SPBFUT00gqr;
+FIRMS_LIST FIRM_ID;
+
+USE_CASE_SENSITIVE_CONSTANTS
+
+PROGRAM
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 1: ПРОВЕРКА СТАТУСА СТОП-ЗАЯВКИ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func status(nom_1)								'nom_1 - номер заявки в торговой системе
+	result = ""								'начальный результат пустая строка
+	for j_1 from 1 to get_number_of("STOP_ORDERS")				'пролистать все строки таблицы стоп-заявок
+		if get_value(get_item("STOP_ORDERS",j_1),"NUMBER") = nom_1	'если стоп-заявка с заданным номером найдена
+			result=get_value(get_item("STOP_ORDERS",j_1),"STATUS")	'результат - статус заявки
+			return							'выход из функции
+		end if
+	end for
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 2: ДОБАВЛЕНИЕ АКТИВНЫХ СДЕЛОК ИЗ ФАЙЛА
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func ins_aktiv_sdel()								'функция без переменных
+	aktiv_sdel_2 = create_collection()					'создать переменную типа коллекция
+	for j_2 from 2 to get_file_len("D:\Програмки\aktiv_sdelki.txt")		'пролистать все строки файла
+		izmeneniya = 1							'внесены изменения в список
+		str_2 = read_line("D:\Програмки\aktiv_sdelki.txt",j_2,0)	'прочитать в переменную строку из файла
+		aisb_2 = create_map()						'создать переменную типа массив
+		i_2 = 0								'переменная-счетчик считываемого из строки показателя
+		for s_2 in str_2						'пролистать показатели в строке записанные через запятую
+			i_2 = i_2+1						'инкрементация счетчика
+										'оператор switch
+			if i_2 = 1
+				aisb_2 = set_value(aisb_2,"SOSTOYANIE",s_2)		'запись в массив показателя 1 (состояние)
+				continue
+									end if
+			if i_2 = 2
+				aisb_2 = set_value(aisb_2,"DATE",s_2)			'запись в массив показателя 2 (дата айсберга)
+				continue
+									end if
+			if i_2 = 3
+				aisb_2 = set_value(aisb_2,"TIME",s_2)			'запись в массив показателя 3 (время айсберга)
+				continue
+									end if
+			if i_2 = 4
+				aisb_2 = set_value(aisb_2,"PRICE",s_2)			'запись в массив показателя 4 (цена айсберга)
+				continue
+									end if
+			if i_2 = 5
+				aisb_2 = set_value(aisb_2,"VOL_AISB",s_2)		'запись в массив показателя 5 (объем айсберга)
+				continue
+									end if
+			if i_2 = 6
+				aisb_2 = set_value(aisb_2,"OPER",s_2)			'запись в массив показателя 6 (направление открытия)
+				continue
+									end if
+			if i_2 = 7
+				aisb_2 = set_value(aisb_2,"OPER_ZAKR",s_2)		'запись в массив показателя 7 (направление закрытия)
+				continue
+									end if
+			if i_2 = 8
+				aisb_2 = set_value(aisb_2,"PRICE_OPEN",s_2)		'запись в массив показателя 8 (цена открытия сделки)
+				continue
+									end if
+			if i_2 = 9
+				aisb_2 = set_value(aisb_2,"PRICE_STOP",s_2)		'запись в массив показателя 9 (стоп-цена открытия)
+				continue
+									end if
+			if i_2 = 10
+				aisb_2 = set_value(aisb_2,"PRICE_ZAYAVKI",s_2)		'запись в массив показателя 10 (цена заявки на открытие)
+				continue
+									end if
+			if i_2 = 11
+				aisb_2 = set_value(aisb_2,"PRICE_SNIAT",s_2)		'запись в массив показателя 11 (цена снятия стоп-заявки на открытие)
+				continue
+									end if
+			if i_2 = 12
+				aisb_2 = set_value(aisb_2,"NOMER_STOP",s_2)		'запись в массив показателя 12 (номер стоп-заявки на открытие)
+				continue
+									end if
+			if i_2 = 13
+				aisb_2 = set_value(aisb_2,"PRICE_UBIT",s_2)		'запись в массив показателя 13 (стоп-цена заявки закрытия с убытком)
+				continue
+									end if
+			if i_2 = 14
+				aisb_2 = set_value(aisb_2,"PRICE_ZAYAVKI_UBIT",s_2)	'запись в массив показателя 14 (цена заявки закрытия с убытком)
+				continue
+									end if
+			if i_2 = 15
+				aisb_2 = set_value(aisb_2,"NOMER_UBIT",s_2)		'запись в массив показателя 15 (номер заявки закрытия с убытком)
+				continue
+									end if
+			if i_2 = 16
+				aisb_2 = set_value(aisb_2,"PRICE_PRIB",s_2)		'запись в массив показателя 16 (стоп-цена заявки закрытия с прибылью)
+				continue
+									end if
+			if i_2 = 17
+				aisb_2 = set_value(aisb_2,"PRICE_ZAYAVKI_PRIB",s_2)	'запись в массив показателя 17 (цена заявки закрытия с прибылью)
+				continue
+									end if
+			if i_2 = 18
+				aisb_2 = set_value(aisb_2,"PRICE_SNIAT_PRIB",s_2)	'запись в массив показателя 18 (цена снятия заявки закрытия с прибылью)
+				continue
+									end if
+			if i_2 = 19
+				aisb_2 = set_value(aisb_2,"NOMER_PRIB",s_2)		'запись в массив показателя 19 (номер заявки закрытия с прибылью)
+				continue
+									end if
+			if i_2 = 20
+				aisb_2 = set_value(aisb_2,"PEREKL",s_2)			'запись в массив показателя 20 (переключатель)
+									end if
+		end for
+		if get_value(aisb_2,"SOSTOYANIE") = "Открыта"					'если сделка открыта
+			if get_value(aisb_2,"NOMER_PRIB")+0 <> 0				'если есть номер прибыльной заявки
+				st_2 = status(get_value(aisb_2,"NOMER_PRIB"))			'проверить статус прибыльной заявки
+				if st_2 = "KILLED" or st_2 = ""					'если заявка снята или ее нет в таблице стоп-заявок
+												'снова выставить прибыльную заявку
+					nom_2 = stop_loss(get_value(aisb_2,"OPER_ZAKR"),get_value(aisb_2,"PRICE_PRIB"),get_value(aisb_2,"PRICE_ZAYAVKI_PRIB"))+0
+					if nom_2>0						'если номер заявки определен (заявка выставлена)
+						aisb_2 = set_value(aisb_2,"NOMER_PRIB",nom_2)	'добавить номер заявки в айсберг
+					else
+						message("Заявка не прошла №"&nom_2,1)
+					end if
+				end if
+				aktiv_sdel_2 = insert_collection_item(aktiv_sdel_2,0,aisb_2)	'добавить в коллекцию текущий массив сделки
+				continue							'перейти к следующей строке файла
+			end if
+			st_2 = status(get_value(aisb_2,"NOMER_UBIT"))				'проверить статус убыточной заявки
+			if st_2 = "KILLED" or st_2 = ""						'если заявка снята или ее нет в таблице стоп-заявок
+												'снова выставить убыточную заявку
+				nom_2 = stop_loss(get_value(aisb_2,"OPER_ZAKR"),get_value(aisb_2,"PRICE_UBIT"),get_value(aisb_2,"PRICE_ZAYAVKI_UBIT"))+0
+				if nom_2>0							'если номер заявки определен (заявка выставлена)
+					aisb_2 = set_value(aisb_2,"NOMER_UBIT",nom_2)		'добавить номер заявки в айсберг
+				else
+					message("Заявка не прошла №"&nom_2,1)
+				end if
+			end if
+			aktiv_sdel_2 = insert_collection_item(aktiv_sdel_2,0,aisb_2)		'добавить в коллекцию текущий массив сделки
+			continue								'перейти к следующей строке файла
+		end if
+		if get_value(aisb_2,"SOSTOYANIE") = "Активна"					'если сделка активна
+			st_2 = status(get_value(aisb_2,"NOMER_STOP"))				'проверить статус заявки на открытие сделки
+			if st_2 = "KILLED" or st_2 = ""						'если заявка снята или ее нет в таблице стоп-заявок
+												'снова выставить заявку
+				nom_2 = stop_loss(get_value(aisb_2,"OPER"),get_value(aisb_2,"PRICE_STOP"),get_value(aisb_2,"PRICE_ZAYAVKI"))+0
+				if nom_2>0							'если номер заявки определен (заявка выставлена)
+					aisb_2 = set_value(aisb_2,"NOMER_STOP",nom_2)		'добавить в массив сделки номер заявки на открытие
+				else
+					message("Заявка не прошла №"&nom_2,1)
+				end if
+			end if
+			aktiv_sdel_2 = insert_collection_item(aktiv_sdel_2,0,aisb_2)		'добавить в коллекцию текущий массив сделки
+			continue	'перейти к следующей строке файла
+		end if
+		if get_value(aisb_2,"DATE") = date_torg						'если сделка текущего дня (снята, пропущена и т.д.)
+			aktiv_sdel_2 = insert_collection_item(aktiv_sdel_2,0,aisb_2)		'добавить в коллекцию текущий массив
+		end if
+	end for
+	result = aktiv_sdel_2									'результат функции - коллекция сделок
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 3: ВЫВОД СДЕЛОК ИЗ КОЛЛЕКЦИИ В ТАБЛИЦУ И ФАЙЛ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func vivod(list_3)							'функция принимает коллекцию сделок
+	izmeneniya = 0							'изменения выведены
+	delete_all_items()						'очистить таблицу
+	clear_file("D:\Програмки\aktiv_sdelki.txt")			'очистить файл активных сделок
+									'вывести заголовок в файл
+	zapis = "Состояние"
+	zapis = zapis	&",Дата"
+	zapis = zapis	&",Время"
+	zapis = zapis	&",Цена айсб."
+	zapis = zapis	&",Объем айсб."
+	zapis = zapis	&",Напр. откр."
+	zapis = zapis	&",Напр. закр."
+	zapis = zapis	&",Цена сделки"
+	zapis = zapis	&",Стоп откр."
+	zapis = zapis	&",Заявка откр."
+	zapis = zapis	&",Снятие откр."
+	zapis = zapis	&",Номер откр."
+	zapis = zapis	&",Стоп убыток"
+	zapis = zapis	&",Заявка убыток"
+	zapis = zapis	&",Номер уб."
+	zapis = zapis	&",Стоп прибыль"
+	zapis = zapis	&",Заявка прибыль"
+	zapis = zapis	&",Снятие приб."
+	zapis = zapis	&",Номер приб."
+	zapis = zapis	&",Перекл."
+	writeln	("D:\Програмки\aktiv_sdelki.txt",zapis)
+	for j_3 from 0 to get_collection_count(list_3)-1							'пролистать все сделки из коллекции
+		aisb_3 = get_collection_item(list_3,j_3)							'взять из коллекции сделку
+		sostoyanie_3 = get_value(aisb_3,"SOSTOYANIE")							'взять из сделки показатель SOSTOYANIE
+		color_3 = "RGB(255,255,255)"									'задать первоночальный цвет строки (белый)
+		add_item(j_3+1,aisb_3)										'добавить сделку в тоблицу
+		if sostoyanie_3 = "Открыта" or sostoyanie_3 = "Прибыль" or sostoyanie_3 = "Убыток"		'если состояние открыта, прибыль или убыток
+			if get_value(aisb_3,"RESULTAT")+0 > 0							'если результат (прибыль/убыток) больше 0
+				color_3 = "RGB(150,255,150)"							'задать зеленый цвет
+			else
+				if get_value(aisb_3,"RESULTAT")+0 < 0						'если результат (прибыдль/убыток) меньше 0
+					color_3 = "RGB(255,150,150)"						'задать красный цвет
+				end if
+			end if
+		else
+														'если состояние снята, пропущена, заменена
+			if sostoyanie_3 = "Снята" or sostoyanie_3 = "Пропущена" or sostoyanie_3 = "Заменена"
+				color_3 = "RGB(255,255,150)"							'задать желтый цвет
+			else
+				if sostoyanie_3 = "Активна"							'если состояние активна
+					color_3 = "RGB(150,255,255)"						'задать голубой цвет
+				end if
+			end if
+		end if
+		set_row_color_ex(j_3+1,color_3,"DEFAULT_COLOR","DEFAULT_COLOR","DEFAULT_COLOR")		'окрасить строку в заданный цвет
+													'записать в файл через запятую показатели сделки:
+		zapis = 	get_value(aisb_3,"SOSTOYANIE")
+		zapis = zapis	&","&get_value(aisb_3,"DATE")
+		zapis = zapis	&","&get_value(aisb_3,"TIME")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE")
+		zapis = zapis	&","&get_value(aisb_3,"VOL_AISB")
+		zapis = zapis	&","&get_value(aisb_3,"OPER")
+		zapis = zapis	&","&get_value(aisb_3,"OPER_ZAKR")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_OPEN")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_STOP")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_ZAYAVKI")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_SNIAT")
+		zapis = zapis	&","&get_value(aisb_3,"NOMER_STOP")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_UBIT")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_ZAYAVKI_UBIT")
+		zapis = zapis	&","&get_value(aisb_3,"NOMER_UBIT")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_PRIB")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_ZAYAVKI_PRIB")
+		zapis = zapis	&","&get_value(aisb_3,"PRICE_SNIAT_PRIB")
+		zapis = zapis	&","&get_value(aisb_3,"NOMER_PRIB")
+		zapis = zapis	&","&get_value(aisb_3,"PEREKL")
+		writeln	("D:\Програмки\aktiv_sdelki.txt",zapis)
+	end for
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 4: ПОИСК И АНАЛИЗ АЙСБЕРГОВ В ЛЕНТЕ 
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func ins_aisb()										'функция без параметров (процедура)
+	n_4 = get_number_of("all_trades")						'определить количество строк в ленте
+	if pervaia_sdel = 0								'если первая сделка равна 0 (т.е. блок выполняется только во время первой итеррации)
+		for nachalo from 1 to n_4						'пролистать все строки ленты до первой сделки текущего дня
+			sdelka_4 = get_item("all_trades",nachalo)			'взять строку из ленты (сделку)
+			date_4 = get_value(sdelka_4,"DATE")				'взять из строки показатель даты сделки
+											'если дата сделки равна текущей (сегодняшней) дате
+			if date_4 = substr(date_torg,6,4)&substr(date_torg,3,2)&substr(date_torg,0,2)
+				time_flag_4 = floor(get_value(sdelka_4,"TIME")/100)	'взять время сделки (формат ЧЧММ)
+				pervaia_sdel = 1					'установить метку 1 в переменной pervaia_sdel
+				break							'выйти из for
+			end if
+		end for									'в переменной nachalo сохраняется номер строки первой сделки текущего дня
+		aisb_list = ins_aktiv_sdel()						'добавить активные сделки из файла (список активных айсбергов)
+	end if
+	VolPrice_4 = create_map()							'создать массив (объемы сделок на продажу/покупку по ценам)
+	PriceList_4 = ""								'создать переменную (цены сделок за минуту через запятую)
+	for j_4 from nachalo to n_4							'пролистывать строки ленты
+		sdelka_4 = get_item("all_trades",j_4)					'взять сделку из ленты
+		time_pred_4 = floor(get_value(sdelka_4,"TIME")/100)			'взять время сделки (формат ЧЧММ)
+		if time_pred_4 != time_flag_4						'если время сменилось (пролистали до следующей минуты)
+			for s_4 in PriceList_4						'пролистать цены сделок за последнюю минуту
+				Sell_4 = get_value(get_value(VolPrice_4,s_4),"SELL")+0	'взять объем продаж по текущей цене
+				Buy_4 = get_value(get_value(VolPrice_4,s_4),"BUY")+0	'взять объем покупок по текущей цене
+				if Sell_4>=1000						'если объем продаж по текущей цене больше или равно 1000 (айсберг на покупку)
+					aisb_4 = create_map()				'создать массив, записать в него показатели сделки
+					aisb_4 = set_value(aisb_4,"DATE",date_torg)						'дата айсберга
+					aisb_4 = set_value(aisb_4,"TIME",substr(time_flag_4,0,2)&":"&substr(time_flag_4,2,2))	'время айсберга
+					aisb_4 = set_value(aisb_4,"PRICE",s_4)							'цена айсберга
+					aisb_4 = set_value(aisb_4,"OPER","B")							'направление открытия айсберга
+					aisb_4 = set_value(aisb_4,"OPER_ZAKR","S")						'направление закрытия айсберга
+					aisb_4 = set_value(aisb_4,"VOL_AISB",Sell_4)						'объем айсберга
+					aisb_4 = set_value(aisb_4,"PRICE_STOP",s_4+510)						'стоп-цена открытия сделки
+					aisb_4 = set_value(aisb_4,"PRICE_ZAYAVKI",s_4+610)					'цена заявки на открытие сделки
+					aisb_4 = set_value(aisb_4,"NOMER_STOP",0)						'номер стоп-заявки на открытие сделки
+					aisb_4 = set_value(aisb_4,"PRICE_OPEN",0)						'цена открытия сделки
+					aisb_4 = set_value(aisb_4,"PRICE_SNIAT",s_4-510)					'цена снятия заявки на открытие
+					aisb_4 = set_value(aisb_4,"PRICE_UBIT",s_4-610)						'цена закрытия с убытком
+					aisb_4 = set_value(aisb_4,"PRICE_ZAYAVKI_UBIT",s_4-710)					'цена заявки закрытия с убытком
+					aisb_4 = set_value(aisb_4,"NOMER_UBIT",0)						'номер сделки закрытия с убытком
+					aisb_4 = set_value(aisb_4,"PRICE_PRIB",0)						'цена закрытия с прибылью
+					aisb_4 = set_value(aisb_4,"PRICE_ZAYAVKI_PRIB",0)					'цена заявки закрытия с прибылью
+					aisb_4 = set_value(aisb_4,"PRICE_SNIAT_PRIB",0)						'цена снятия заявки с прибылью
+					aisb_4 = set_value(aisb_4,"NOMER_PRIB",0)						'номер сделки закрытия с прибылью
+					aisb_4 = set_value(aisb_4,"SOSTOYANIE",0)						'состояние сделки
+					aisb_4 = set_value(aisb_4,"PEREKL",read_line("D:\Програмки\perekl.txt",1,0))		'переключатель части торговой недели
+					metka_4 = 0								'метка для проверки отработанных сделок
+					for i_4 from 0 to get_collection_count(aisb_list)-1			'пролистать коллекцию сделок
+						akt_sdel_4 = get_collection_item(aisb_list,i_4)			'взять сделку из коллекции
+						time_4 = get_value(akt_sdel_4,"TIME")				'взять время сделки
+						oper_4 = get_value(akt_sdel_4,"OPER")				'взять направление сделки
+						price_4 = get_value(akt_sdel_4,"PRICE")				'взять цену айсберга
+						if time_4 = substr(time_flag_4,0,2)&":"&substr(time_flag_4,2,2)	'если время совпадает
+							if oper_4 = "B"						'если направление совпадает
+								if price_4 = s_4				'если цена айсберга совпадает
+									metka_4 = 1				'установить метку 1 (айсберг отработан, пропустить)
+									break					'выход из блока
+								end if
+							end if
+						end if
+					end for
+					if metka_4 = 0								'если найденный айсберг не отработан
+						aisb_list = zayavka_otkritie(aisb_4,aisb_list)			'выставить заявку на открытие сделки
+						izmeneniya = 1							'внесены изменения
+					end if
+				end if
+
+				if Buy_4>=1000						'если объем продаж по текущей цене больше или равно 1000 (айсберг на покупку)
+					aisb_4 = create_map()				'создать массив, записать в него показатели сделки
+					aisb_4 = set_value(aisb_4,"DATE",date_torg)						'дата айсберга
+					aisb_4 = set_value(aisb_4,"TIME",substr(time_flag_4,0,2)&":"&substr(time_flag_4,2,2))	'время айсберга
+					aisb_4 = set_value(aisb_4,"PRICE",s_4)							'цена айсберга
+					aisb_4 = set_value(aisb_4,"OPER","S")							'направление открытия айсберга
+					aisb_4 = set_value(aisb_4,"OPER_ZAKR","B")						'направление закрытия айсберга
+					aisb_4 = set_value(aisb_4,"VOL_AISB",Buy_4)						'объем айсберга
+					aisb_4 = set_value(aisb_4,"PRICE_STOP",s_4-510)						'стоп-цена открытия сделки
+					aisb_4 = set_value(aisb_4,"PRICE_ZAYAVKI",s_4-610)					'цена заявки на открытие сделки
+					aisb_4 = set_value(aisb_4,"NOMER_STOP",0)						'номер стоп-заявки на открытие сделки
+					aisb_4 = set_value(aisb_4,"PRICE_OPEN",0)						'цена открытия сделки
+					aisb_4 = set_value(aisb_4,"PRICE_SNIAT",s_4+510)					'цена снятия заявки на открытие
+					aisb_4 = set_value(aisb_4,"PRICE_UBIT",s_4+610)						'цена закрытия с убытком
+					aisb_4 = set_value(aisb_4,"PRICE_ZAYAVKI_UBIT",s_4+710)					'цена заявки закрытия с убытком
+					aisb_4 = set_value(aisb_4,"NOMER_UBIT",0)						'номер сделки закрытия с убытком
+					aisb_4 = set_value(aisb_4,"PRICE_PRIB",0)						'цена закрытия с прибылью
+					aisb_4 = set_value(aisb_4,"PRICE_ZAYAVKI_PRIB",0)					'цена заявки закрытия с прибылью
+					aisb_4 = set_value(aisb_4,"PRICE_SNIAT_PRIB",0)						'цена снятия заявки с прибылью
+					aisb_4 = set_value(aisb_4,"NOMER_PRIB",0)						'номер сделки закрытия с прибылью
+					aisb_4 = set_value(aisb_4,"SOSTOYANIE",0)						'состояние сделки
+					aisb_4 = set_value(aisb_4,"PEREKL",read_line("D:\Програмки\perekl.txt",1,0))		'переключатель части торговой недели
+					metka_4 = 0								'метка для проверки отработанных сделок
+					for i_4 from 0 to get_collection_count(aisb_list)-1			'пролистать коллекцию сделок
+						akt_sdel_4 = get_collection_item(aisb_list,i_4)			'взять сделку из коллекции
+						time_4 = get_value(akt_sdel_4,"TIME")				'взять время сделки
+						oper_4 = get_value(akt_sdel_4,"OPER")				'взять направление сделки
+						price_4 = get_value(akt_sdel_4,"PRICE")				'взять цену айсберга
+						if time_4 = substr(time_flag_4,0,2)&":"&substr(time_flag_4,2,2)	'если время совпадает
+							if oper_4 = "S"						'если направление совпадает
+								if price_4 = s_4				'если цена айсберга совпадает
+									metka_4 = 1				'установить метку 1 (айсберг отработан, пропустить)
+									break					'выход из блока
+								end if
+							end if
+						end if
+					end for
+					if metka_4 = 0								'если найденный айсберг не отработан
+						aisb_list = zayavka_otkritie(aisb_4,aisb_list)			'выставить заявку на открытие сделки
+						izmeneniya = 1							'внесены изменения
+					end if
+				end if
+			end for
+			nachalo = j_4			'начало следующей проверки с последней непроверенной минуты
+			time_flag_4 = time_pred_4	'поменять время следующей проверяемой минуты
+			VolPrice_4 = create_map()	'очистить массив (объемы сделок на продажу/покупку по ценам)
+			PriceList_4 = ""		'очистить список цен за минуту
+		end if
+		if(get_value(sdelka_4,"SECURITY") <> "RIZ7"			'если сделка не по бумаге RIZ7
+			continue						'перейти к следующей строке
+		end if								'накапливать информацию по сделкам за текущую минуту
+		Price_4		= get_value(sdelka_4,"PRICE")			'взять цену сделки
+		Quantity_4	= get_value(sdelka_4,"QUANTITY")		'взять объем сделки
+		Operation_4	= get_value(sdelka_4,"OPERATION")		'взять направление сделки
+		price_SB_4 = get_value(VolPrice_4,Price_4)			'взять накопленные объемы по текущей цене из VolPrice_4
+		QuantitySum_4 = get_value(price_SB_4,Operation_4)+Quantity_4	'прибавить объем сделки к накопленному объему по текущему направлению (Buy/Sell)
+		price_SB_4 = set_value(price_SB_4,Operation_4,QuantitySum_4)	'записать накобленный объем QuantitySum_4 обратно в price_SB_4 в текущее направление
+		if get_value(VolPrice_4,Price_4) = ""				'если текущей цены еще не было за минуту
+			PriceList_4 = PriceList_4&Price_4&","			'записать цену в PriceList_4 через запятую
+		end if
+		VolPrice_4 = set_value(VolPrice_4,Price_4,price_SB_4)		'записать дополненную price_SB_4 в текущую цену в VolPrice_4
+	end for
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 5: ОТКРЫТИЕ НОВОЙ СДЕЛКИ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func zayavka_otkritie(aisb_5,list_5)										'функция принимает новый айзберг и список текущих айсбергов
+	oper_5 = get_value(aisb_5,"OPER")									'взять направление айсберга
+	stop_5 = get_value(aisb_5,"PRICE_STOP")+0								'взять цену стоп-заявки айсберга
+	perekl_5 = get_value(aisb_5,"PEREKL")									'взять переключатель айсберга на часть торговой недели
+	result = list_5												'начальный результат - текущий сбисок айсбергов без добавления нового
+	for j_5 from 0 to get_collection_count(list_5)-1							'пролистать список айсбергов
+		aisb_pred_5 = get_collection_item(list_5,j_5)							'взять текущий айсберг
+		if get_value(aisb_pred_5,"OPER") = oper_5							'если направления текущего и нового айсбергов совпадают
+			if get_value(aisb_pred_5,"SOSTOYANIE") = "Активна"					'если состояние текущего айсберга активна
+														'если направление продажа и стоп-цена текущего айсберга больше или равна стоп-цене нового или
+														'направление покупка и стоп-цена текущего айсберга меньше или равна стоп-цене нового
+				if (oper_5 = "S" and get_value(aisb_pred_5,"PRICE_STOP")+0 >= stop_5) or (oper_5 = "B" and get_value(aisb_pred_5,"PRICE_STOP")+0 <= stop_5)
+					aisb_5 = set_value(aisb_5,"SOSTOYANIE","Пропущена")			'айсберг пропускается, активный лучше нового (новый откроется позже текущего)
+					list_5 = insert_collection_item(list_5,0,aisb_5)			'добавить пропущеный айсберг в список без сделки
+					result = list_5								'результат - дополненый список
+					return									'выход из функции
+				else
+														'если направление продажа и стоп-цена текущего айсберга меньше стоп-цены нового или
+														'направление покупка и стоп-цена текущего айсберга больше стоп-цены нового
+					if (oper_5 = "S" and get_value(aisb_pred_5,"PRICE_STOP")+0 < stop_5) or (oper_5 = "B" and get_value(aisb_pred_5,"PRICE_STOP")+0 > stop_5)
+						zayavka_snyatie(get_value(aisb_pred_5,"NOMER_STOP"))		'снять текущий айсберг, новый лучше (откроется раньше текущего)
+						aisb_pred_5 = set_value(aisb_pred_5,"SOSTOYANIE","Заменена")	'состояне текущего айсберга - Заменена
+						list_5 = set_collection_item(list_5,j_5,aisb_pred_5)		'заменить исправленный айсберг
+						break								'выход из цикла
+					end if
+				end if
+			else
+				if get_value(aisb_pred_5,"SOSTOYANIE") = "Открыта"				'если текущий айсберг открыт
+					aisb_5 = set_value(aisb_5,"SOSTOYANIE","Пропущена")			'новый айсберг пропустить
+					list_5 = insert_collection_item(list_5,0,aisb_5)			'добавить пропущеный айсберг в список без сделки
+					result = list_5 							'результат - дополненный список
+					return 									'выход из функции
+				end if
+			end if
+		end if
+	end for
+	for j_5 from 0 to get_collection_count(list_5)-1 							'пролистать список айсбергов
+		aisb_pred_5 = get_collection_item(list_5,j_5) 							'взять айсберг
+		if get_value(aisb_pred_5,"OPER") <> oper_5 							'если направление текущего айсберга и нового не совпадают
+			if get_value(aisb_pred_5,"SOSTOYANIE") = "Открыта" 					'если состояние текущего айсберга - открыта
+				if get_value(aisb_pred_5,"NOMER_PRIB")+0 <> 0					'если заявка закрытия текущего айсберга уже стоит (т.е. номер заявки не 0)
+					price_zakr_5 = get_value(aisb_pred_5,"PRICE_PRIB")+0			'взять цену закрытия с прибылью текущего айсберга
+				else
+					price_zakr_5 = get_value(aisb_pred_5,"PRICE_UBIT")+0 			'взять цену закрытия с убытком текущего айсберга
+				end if
+														'если направление нового айсберга продажа (т.е. направление текущего - купля)
+														'и цена закрытия текущего айсберга меньше цены открытия нового айсберга
+														'(т.е. новая заявка прибыльней) или направление покупка
+														'и цена закрытия текущего айсберга больше цены открытия нового айсберга
+				if (oper_5 = "S" and price_zakr_5 < stop_5) or (oper_5 = "B" and price_zakr_5 > stop_5)
+					if get_value(aisb_pred_5,"NOMER_PRIB")+0 <> 0				'если заявка закрытия текущего айсберга уже стоит (т.е. номер заявки не 0)
+						zayavka_snyatie(get_value(aisb_pred_5,"NOMER_PRIB"))		'снять заявку закрытия с прибылью
+					else
+						zayavka_snyatie(get_value(aisb_pred_5,"NOMER_UBIT"))		'если нет (стоит заявка закрытия с убытком) - снять ее
+						aisb_pred_5 = set_value(aisb_pred_5,"NOMER_UBIT",0)		'обнулить номер снятой убыточной заявки
+					end if
+					nom_5 = stop_loss(oper_5,stop_5,get_value(aisb_5,"PRICE_ZAYAVKI"))+0	'выставить заявку
+					if nom_5>0								'если транзакция выполнена
+						aisb_pred_5 = set_value(aisb_pred_5,"NOMER_PRIB",nom_5)						'записать номер заявки как номер закрытия с прибылью
+						aisb_pred_5 = set_value(aisb_pred_5,"PRICE_PRIB",stop_5)					'записать цену заявки закрытия с прибылью
+						aisb_pred_5 = set_value(aisb_pred_5,"PRICE_ZAYAVKI_PRIB",get_value(aisb_5,"PRICE_ZAYAVKI"))	'записать цену выставляемой заявки
+						aisb_pred_5 = set_value(aisb_pred_5,"PRICE_SNIAT_PRIB",get_value(aisb_5,"PRICE_SNIAT"))		'записать цену снятия заявки закрытия с прибылью
+						list_5 = set_collection_item(list_5,j_5,aisb_pred_5)						'заменить исправленный айсберг в списке
+					else
+						aisb_5 = set_value(aisb_5,"NOMER_STOP",nom_5)			'записать номер заявки как номер открытия сделки
+						aisb_5 = set_value(aisb_5,"SOSTOYANIE","Не прошла")		'заявка не прошла
+					end if
+				end if
+			end if
+		end if
+	end for
+											'если не вышли из функции до сих пор
+	if perekl_5 = "1"								'если переключатель нового айсберга равен 1
+		nom_5 = stop_loss(oper_5,stop_5,get_value(aisb_5,"PRICE_ZAYAVKI"))+0	'выставить заявку
+		if nom_5>0								'если транзакция прошла
+			aisb_5 = set_value(aisb_5,"NOMER_STOP",nom_5)			'записать номер заявки как номер открытия сделки
+			aisb_5 = set_value(aisb_5,"SOSTOYANIE","Активна")		'айсберг активен
+		else
+			aisb_5 = set_value(aisb_5,"NOMER_STOP",nom_5)			'записать номер заявки как номер открытия сделки
+			aisb_5 = set_value(aisb_5,"SOSTOYANIE","Не прошла")		'заявка не прошла
+		end if
+	else
+		aisb_5 = set_value(aisb_5,"SOSTOYANIE","Пропущена")			'новый айсберг пропустить
+	end if
+	list_5 = insert_collection_item(list_5,0,aisb_5)				'добавить новый айсберг в список
+	result = list_5									'результат - список текущих айсбергов
+end func
+
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 6: СНЯТИЕ АКТИВНОЙ ЗАЯВКИ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func zayavka_snyatie(nom_6)					'функция принимает номер заявки в торговой системе
+	param = create_map()					'создать массив для записи параметров транзакции
+	param = set_value(param,"TRANS_ID",1)			'идентификатор транзакции
+	param = set_value(param,"CLASSCODE","SPBFUT")		'код класса
+	param = set_value(param,"SECCODE","RIZ7")		'код инструмента
+	param = set_value(param,"ACCOUNT","SPBFUT00gqr")	'код клиента
+	param = set_value(param,"ACTION","KILL_STOP_ORDER")	'тип транзакции
+	param = set_value(param,"STOP_ORDER_KEY",nom_6)		'номер заявки
+	trans_result = send_transaction(60,param)		'выполнить транзакцию
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 7: ПРОВЕРКА АКТИВНЫХ СДЕЛОК (ЕСЛИ ОДНОВРЕМЕННО БЫЛИ АКТИВНЫ 2 ПРОТИВОПОЛОЖНЫЕ СДЕЛКИ)
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func prov_aktiv(aisb_7,list_7)								'функция принимает исполненный активный айсберг и список активных айсбергов
+	oper_7 = get_value(aisb_7,"OPER")						'взять операцию исполненного айсберга
+	for j_7 from 0 to get_collection_count(list_7)-1				'пролистать список айсбергов
+		aisb_prov_7 = get_collection_item(list_7,j_7)				'взять айсберг
+		if get_value(aisb_prov_7,"OPER") <> oper_7				'если направления исполненного и проверяемого разные
+			if get_value(aisb_prov_7,"SOSTOYANIE") = "Активна"		'если состояние проверяемого - активна
+				price_ubit_7 = get_value(aisb_7,"PRICE_UBIT")+0		'взять цену закрытия с убытком исполненного айсберга
+				stop_7 = get_value(aisb_prov_7,"PRICE_STOP")+0		'взять цену открытия проверяемого айсберга
+											'если операция исполненного продажа и цена закрытия с убытком
+											'больше цены открытия проверяемой или операция исполненного покупка и
+											'цена закрытия с убытком меньше цены открытия проверяемой
+				if (oper_7 = "S" and price_ubit_7 > stop_7) or (oper_7 = "B" and price_ubit_7 < stop_7)
+					nom_7 = stop_loss(get_value(aisb_prov_7,"OPER"),stop_7,get_value(aisb_prov_7,"PRICE_ZAYAVKI"))+0	'выставить заявку закрытия с прибылью
+					if nom_7>0												'если номер заявки определен (заявка выставлена)
+						aisb_7 = set_value(aisb_7,"NOMER_PRIB",nom_7)							'добавить номер заявки в айсберг
+						aisb_7 = set_value(aisb_7,"PRICE_PRIB",stop_7)							'цена прибыльной заявки
+						aisb_7 = set_value(aisb_7,"PRICE_ZAYAVKI_PRIB",get_value(aisb_prov_7,"PRICE_ZAYAVKI"))		'цена выставляемой заявки
+						aisb_7 = set_value(aisb_7,"PRICE_SNIAT_PRIB",get_value(aisb_prov_7,"PRICE_SNIAT"))		'цена снятия прибыльной заявки
+						aisb_7 = set_value(aisb_7,"SOSTOYANIE","Открыта")						'состояние айсберга - Открыта
+					else
+						message("Заявка не прошла №"&nom_7,1)
+					end if
+					result = aisb_7					'результат исправленный айсберг
+					return						'выход из функции
+				end if
+			end if
+		end if
+	end for			
+																'если не вышли из функции до сих пор
+	nom_7 = stop_loss(get_value(aisb_7,"OPER_ZAKR"),get_value(aisb_7,"PRICE_UBIT"),get_value(aisb_7,"PRICE_ZAYAVKI_UBIT"))+0'выставить заявку закрытия с убытком
+	if nom_7>0														'если номер заявки определен (заявка выставлена)
+		aisb_7 = set_value(aisb_7,"NOMER_UBIT",nom_7)									'добавить номер заявки в айсберг
+		aisb_7 = set_value(aisb_7,"SOSTOYANIE","Открыта")								'состояние айсберга - Открыта
+	else
+		message("Заявка не прошла №"&nom_7,1)
+	end if
+	result = aisb_7									'результат исправленный айсберг
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 8: ПОИСК ЦЕНЫ СДЕЛКИ ПРИ СРАБАТЫВАНИИ СТОП-ЗАЯВКИ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func price_sdelki(nom_8)									'функция принимает номер стоп-заявки в торговой системе
+	result = ""										'начальный результат 0
+	nom_zaiavki = ""									'номер заявки выставленной по исполнению стоп-заявки 0
+	for j_8 from 1 to get_number_of("STOP_ORDERS")						'пролистать все строки таблицы стоп-заявок
+		if get_value(get_item("STOP_ORDERS",j_8),"NUMBER") = nom_8			'если номер стоп-заявки в таблице и номер искомой совпадают
+			nom_zaiavki = get_value(get_item("STOP_ORDERS",j_8),"LINKED_ORDER")	'взять номер заявки выставленной по исполнению стоп-заявки
+			break									'выход из цикла
+		end if
+	end for
+	for j_8 from 1 to get_number_of("TRADES")						'пролистать все строки таблицы сделок
+		if get_value(get_item("TRADES",j_8),"ORDER_NUMBER") = nom_zaiavki		'если номер заявки в таблице и номер искомой совпадают
+			result = get_value(get_item("TRADES",j_8),"PRICE")			'результат - цена сделки
+			return									'выход из функции
+		end if
+	end for
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						фУНКЦИЯ 9: ВЫСТАВЛЕНИЕ СТОП-ЗАЯВКИ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+func stop_loss(oper_9,stopprice_9,price_9)			'функция принимает параметры: операция, стоп-цена, цена
+	param = create_map()					'создать массив для записи параметров транзакции
+	param = set_value(param,"TRANS_ID",1)			'идентификатор транзакции
+	param = set_value(param,"CLASSCODE","SPBFUT")		'код класса
+	param = set_value(param,"SECCODE","RIZ7")		'код инструмента
+	param = set_value(param,"ACCOUNT","SPBFUT00gqr")	'код клиента
+	param = set_value(param,"ACTION","NEW_STOP_ORDER")	'тип транзакции
+	param = set_value(param,"OPERATION",oper_9)		'операция
+	param = set_value(param,"QUANTITY",kol_kontr)		'объем
+	param = set_value(param,"STOPPRICE",stopprice_9)	'стоп-цена
+	param = set_value(param,"PRICE",price_9)		'цена
+	trans_result = send_transaction(60,param)		'выполнить транзакцию
+	result = get_value(trans_result,"ORDER_NUMBER")		'результат - номер заявки в торговой системе
+end func
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						ПЕРЕМЕННЫЕ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	new_global("pervaia_sdel",0)				'флаг - метка на выполнение первой итеррации (исп-ся в ф-ии ins_aisb() один раз во время поиска первой сделки текущего дня)
+	new_global("aisb_list",create_collection())		'список, содержит асберги
+	new_global("nachalo",0)					'переменная содержит номер строки в ленте с которой начинается поиск айсбергов
+	new_global("date_torg",get_info_param("TRADEDATE"))	'дата текущей торговой сессии
+	new_global("izmeneniya",0)
+	new_global("kol_kontr",1)				'количество торгуемых контрактов
+
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'						ГЛАВНАЯ ФУНКЦИЯ
+'++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	if get_info_param("SERVERTIME") = ""			'если время сервера - пустое значение, т.е. нет связи (появляется позже восстановления связи с сервером)
+		return						'выход из программы
+	end if
+	for i from 0 to get_collection_count(aisb_list)-1						'пролистать список айсбергов
+		lastPrice = get_param("SPBFUT","RIZ7","LAST")+0						'взять цену последней сделки
+		aisberg = get_collection_item(aisb_list,i)						'взять айсберг
+		sostoyanie = get_value(aisberg,"SOSTOYANIE")						'взять состояние айсберга
+		oper = get_value(aisberg,"OPER")							'взять операцию айсберга
+		if sostoyanie = "Активна"								'если состояние - Активна
+			st = status(get_value(aisberg,"NOMER_STOP"))					'определить статус заявки на открытие сделки
+			if st = "ACTIVE"								'если заявка активна
+				price_sniat = get_value(aisberg,"PRICE_SNIAT")+0			'взять цену снятия заявки
+				if (lastPrice <> 0)							'если цена последней сделки не равна  0 (бывает после восстановления связи)
+													'если операция продажа и цена последней сделки больше или равна цене снятия или
+													'операция покупка и цена последней сделки меньше или равна цене снятия 
+					if (oper = "S" and lastPrice >= price_sniat) or (oper = "B" and lastPrice <= price_sniat)
+						zayavka_snyatie(get_value(aisberg,"NOMER_STOP"))	'снять заявку на открытие сделки
+						aisberg = set_value(aisberg,"SOSTOYANIE","Снята")	'состояние - Снята
+						aisberg = set_value(aisberg,"NOMER_STOP",0)		'обнулить номер снятой заявки
+						aisb_list = set_collection_item(aisb_list,i,aisberg)	'заменить исправленный айсберг в списке
+						izmeneniya = 1						'внесены изменения в список
+					end if
+				end if
+			else
+				if st = "FILLED"										'если заявка исполнена (сделка открыта)
+					aisberg = set_value(aisberg,"PRICE_OPEN",price_sdelki(get_value(aisberg,"NOMER_STOP")))	'записать в айсберг цену открытия сделки				
+					aisberg = prov_aktiv(aisberg,aisb_list)							'проверить есть ли активные айсберги с противоположной операцией
+					aisb_list = set_collection_item(aisb_list,i,aisberg)					'заменить исправленный айсберг
+					izmeneniya = 1										'внесены изменения в список
+				end if
+			end if
+		else
+			if sostoyanie = "Открыта"												'если состояние - Открыта
+				if (lastPrice <> 0)												'если цена последней сделки не равна  0 (бывает после восстановления связи)
+					if oper = "B"												'если операция покупка
+						aisberg = set_value(aisberg,"RESULTAT",(lastPrice-get_value(aisberg,"PRICE_OPEN"))*kol_kontr)	'подбить результат
+					else													'если операция продажа
+						aisberg = set_value(aisberg,"RESULTAT",(-lastPrice+get_value(aisberg,"PRICE_OPEN"))*kol_kontr)	'подбить результат
+					end if
+					izmeneniya = 1											'внесены изменения в список
+				end if
+				st = status(get_value(aisberg,"NOMER_PRIB"))					'определить статус заявки закрытия с прибылью (если ее нет то будет пустое значение)
+				if st = "ACTIVE"								'если статус Активна
+					price_sniat = get_value(aisberg,"PRICE_SNIAT_PRIB")+0			'взять цену снятия заявки с прибылью
+					if (lastPrice <> 0)							'если цена последней сделки не равна  0 (бывает после восстановления связи)
+														'если операция продажа и цена последней сделки меньше или равна цене снятия или
+														'операция покупка и цена последней сделки больше или равна цене снятия 
+						if (oper = "S" and lastPrice <= price_sniat) or (oper = "B" and lastPrice >= price_sniat)
+							zayavka_snyatie(get_value(aisberg,"NOMER_PRIB"))	'снять заявку закрытия с прибылью
+							aisberg = set_value(aisberg,"NOMER_PRIB",0)		'номер прибыльной заявки 0
+							aisberg = set_value(aisberg,"PRICE_PRIB",0)		'цена прибыльной заявки 0
+							aisberg = set_value(aisberg,"PRICE_ZAYAVKI_PRIB",0)	'цена выставляемой заявки 0
+							aisberg = set_value(aisberg,"PRICE_SNIAT_PRIB",0)	'цена снятия заявки 0
+														'выставить заявку закрытия с убытком
+							nom = stop_loss(get_value(aisberg,"OPER_ZAKR"),get_value(aisberg,"PRICE_UBIT"),get_value(aisberg,"PRICE_ZAYAVKI_UBIT"))+0
+							if nom>0						'если номер заявки определен (заявка выставлена)
+								aisberg = set_value(aisberg,"NOMER_UBIT",nom)	'добавить номер заявки в айсберг
+							else
+								message("Заявка не прошла №"&nom,1)
+							end if										'внесены изменения в список
+						end if
+					end if
+				else
+					if st = "FILLED"											'если заявка исполнена
+						aisberg = set_value(aisberg,"PRICE_CLOSE",price_sdelki(get_value(aisberg,"NOMER_PRIB")))	'записать цену сделки закрытия	с прибылью
+						aisberg = set_value(aisberg,"SOSTOYANIE","Прибыль")						'состояние - Прибыль
+						if oper = "B"															'если операция покупка
+							aisberg = set_value(aisberg,"RESULTAT",(get_value(aisberg,"PRICE_CLOSE")-get_value(aisberg,"PRICE_OPEN"))*kol_kontr)	'подбить результат
+						else																'если операция продажа
+							aisberg = set_value(aisberg,"RESULTAT",(-get_value(aisberg,"PRICE_CLOSE")+get_value(aisberg,"PRICE_OPEN"))*kol_kontr)	'подбить результат
+						end if
+					end if
+				end if
+				st = status(get_value(aisberg,"NOMER_UBIT"))								'определить статус заявки закрытия с убытком
+				if st = "FILLED"											'если заявка исполнена
+					aisberg = set_value(aisberg,"PRICE_CLOSE",price_sdelki(get_value(aisberg,"NOMER_UBIT")))	'записать цену сделки закрытия с убытком
+					aisberg = set_value(aisberg,"SOSTOYANIE","Убыток")						'состояние - Убыток
+					if oper = "B"															'если операция покупка
+						aisberg = set_value(aisberg,"RESULTAT",(get_value(aisberg,"PRICE_CLOSE")-get_value(aisberg,"PRICE_OPEN"))*kol_kontr)	'подбить результат
+					else																'если операция продажа
+						aisberg = set_value(aisberg,"RESULTAT",(-get_value(aisberg,"PRICE_CLOSE")+get_value(aisberg,"PRICE_OPEN"))*kol_kontr)	'подбить результат
+					end if
+				end if
+				aisb_list = set_collection_item(aisb_list,i,aisberg)							'заменить исправленный айсберг
+			end if
+		end if
+	end for
+	ins_aisb()			'анализ ленты, поиск новых айсбергов, добавление в список, выставление заявок
+	if izmeneniya = 1		'если внесены изменения в список
+		vivod(aisb_list)	'вывести список айсбергов в таблицу, записать в файл
+	end if
+
+END_PROGRAM
+
+PARAMETER SOSTOYANIE;
+PARAMETER_TITLE Состояние;
+PARAMETER_DESCRIPTION Состояние;
+PARAMETER_TYPE STRING(20);
+END
+
+PARAMETER DATE;
+PARAMETER_TITLE Дата;
+PARAMETER_DESCRIPTION Дата;
+PARAMETER_TYPE STRING(10);
+END
+
+PARAMETER TIME;
+PARAMETER_TITLE Время;
+PARAMETER_DESCRIPTION Время;
+PARAMETER_TYPE STRING(5);
+END
+
+PARAMETER PRICE;
+PARAMETER_TITLE Цена;
+PARAMETER_DESCRIPTION Цена;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER VOL_AISB;
+PARAMETER_TITLE Объем;
+PARAMETER_DESCRIPTION Объем;
+PARAMETER_TYPE NUMERIC(5,0);
+END
+
+PARAMETER OPER;
+PARAMETER_TITLE Операция;
+PARAMETER_DESCRIPTION Операция;
+PARAMETER_TYPE STRING(2);
+END
+
+PARAMETER OPER_ZAKR;
+PARAMETER_TITLE Операция закрытия;
+PARAMETER_DESCRIPTION Операция закрытия;
+PARAMETER_TYPE STRING(2);
+END
+
+PARAMETER PRICE_OPEN;
+PARAMETER_TITLE Цена открытия;
+PARAMETER_DESCRIPTION Цена открытия;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_CLOSE;
+PARAMETER_TITLE Цена закрытия;
+PARAMETER_DESCRIPTION Цена закрытия;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER RESULTAT;
+PARAMETER_TITLE Результат;
+PARAMETER_DESCRIPTION Результат;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_STOP;
+PARAMETER_TITLE Стоп цена;
+PARAMETER_DESCRIPTION Стоп цена;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_ZAYAVKI;
+PARAMETER_TITLE Цена заявки;
+PARAMETER_DESCRIPTION Цена заявки;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_SNIAT;
+PARAMETER_TITLE Цена снятия;
+PARAMETER_DESCRIPTION Цена снятия;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER NOMER_STOP;
+PARAMETER_TITLE Номер открытие;
+PARAMETER_DESCRIPTION Номер открытие;
+PARAMETER_TYPE STRING(10);
+END
+
+PARAMETER PRICE_UBIT;
+PARAMETER_TITLE Цена убыток;
+PARAMETER_DESCRIPTION Цена убыток;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_ZAYAVKI_UBIT;
+PARAMETER_TITLE Цена заявки убыт.;
+PARAMETER_DESCRIPTION Цена заявки убыт.;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER NOMER_UBIT;
+PARAMETER_TITLE Номер убыток;
+PARAMETER_DESCRIPTION Номер убыток;
+PARAMETER_TYPE STRING(10);
+END
+
+PARAMETER PRICE_PRIB;
+PARAMETER_TITLE Цена приб.;
+PARAMETER_DESCRIPTION Цена приб.;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_ZAYAVKI_PRIB;
+PARAMETER_TITLE Цена заявки приб.;
+PARAMETER_DESCRIPTION Цена заявки приб.;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER PRICE_SNIAT_PRIB;
+PARAMETER_TITLE Цена снятия приб.;
+PARAMETER_DESCRIPTION Цена снятия приб.;
+PARAMETER_TYPE NUMERIC(6,0);
+END
+
+PARAMETER NOMER_PRIB;
+PARAMETER_TITLE Номер приб.;
+PARAMETER_DESCRIPTION Номер приб.;
+PARAMETER_TYPE STRING(10);
+END
